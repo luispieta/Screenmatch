@@ -19,19 +19,25 @@ public class ScreenmatchApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		var consumoApi = new ConsumoApi();
+		var conversor = new ConverteDados();
+
+		com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
 		var json = consumoApi.obterDados("https://www.omdbapi.com/?t=Rick+and+Morty&apiKey=6585022c");
-		ConverteDados conversor = new ConverteDados();
 		DadosSerie dadosSerie = conversor.obterDados(json, DadosSerie.class);
-		System.out.println(dadosSerie);
 
-		json = consumoApi.obterDados("https://www.omdbapi.com/?t=Rick+and+Morty&Season=1&apiKey=6585022c");
-		DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
-		System.out.println(dadosTemporada);
+		System.out.println("--- DADOS DA SÉRIE ---");
+		System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dadosSerie));
 
-		json = consumoApi.obterDados("https://www.omdbapi.com/?t=Rick+and+Morty&Season=1&Episode=2&apiKey=6585022c");
-		DadosEpisodio dadosEpisodio = conversor.obterDados(json, DadosEpisodio.class);
-		System.out.println(dadosEpisodio);
+		for (int i = 1; i <= dadosSerie.totalTemporadas(); i++) {
+			json = consumoApi.obterDados("https://www.omdbapi.com/?t=Rick+and+Morty&Season=" + i + "&apiKey=6585022c");
 
+			DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
+			String jsonFormatado = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dadosTemporada);
+
+			System.out.println("\n--- TEMPORADA " + i + " ---");
+			System.out.println(jsonFormatado);
+		}
 	}
 
 }
