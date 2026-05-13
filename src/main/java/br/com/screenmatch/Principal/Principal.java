@@ -1,0 +1,60 @@
+package br.com.screenmatch.Principal;
+
+import br.com.screenmatch.Service.ConsumoApi;
+import br.com.screenmatch.Service.ConverteDados;
+import br.com.screenmatch.domain.Series.DadosSerie;
+import br.com.screenmatch.domain.Series.DadosTemporada;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+public class Principal {
+
+    private Scanner leitura = new Scanner(System.in);
+    private final String ENDERECO = "https://www.omdbapi.com/?t=";
+    private final String API_KEY = "&apiKey=6585022c";
+    private final String SEASON = "&Season=";
+    private ConsumoApi consumo = new ConsumoApi();
+    private ConverteDados conversor = new ConverteDados();
+    private com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    public void exibeMenu() throws JsonProcessingException {
+
+        System.out.println("Digite o nome da série para a busca: ");
+        var nomeSerie = leitura.nextLine();
+
+        System.out.println("----- DADOS DA TEMPORADA -----");
+        var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
+        DadosSerie dadosSerie = conversor.obterDados(json, DadosSerie.class);
+        String dadosSerieFormatado = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dadosSerie);
+        System.out.println(dadosSerieFormatado);
+
+        List<DadosTemporada> temporadas = new ArrayList<>();
+
+		for (int i = 1; i <= dadosSerie.totalTemporadas(); i++) {
+			json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + SEASON + i + API_KEY);
+
+            DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
+			String dadosTemporadaFormatado = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dadosTemporada);
+            temporadas.add(dadosTemporada);
+
+			System.out.println("\n--- TEMPORADA " + i + " ---");
+			System.out.println(dadosTemporadaFormatado);
+
+		}
+        temporadas.forEach(System.out::println);
+
+//        for(int i = 0; i < dadosSerie.totalTemporadas(); i++){
+//            List<DadosEpisodio> episodiosTemporada = temporadas.get(i).episodios();
+//
+//            for(int j = 0; j < episodiosTemporada.size(); j++){
+//                System.out.println(episodiosTemporada.get(j).titulo());
+//            }
+//        }
+
+        temporadas.forEach(t -> t.episodios().forEach(e -> System.out.println(e.titulo())));
+
+    }
+
+}
