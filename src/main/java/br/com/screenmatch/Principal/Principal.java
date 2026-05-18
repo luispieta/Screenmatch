@@ -2,10 +2,14 @@ package br.com.screenmatch.Principal;
 
 import br.com.screenmatch.Service.ConsumoApi;
 import br.com.screenmatch.Service.ConverteDados;
+import br.com.screenmatch.domain.Episodio.Episodio;
 import br.com.screenmatch.domain.Series.DadosEpisodio;
 import br.com.screenmatch.domain.Series.DadosSerie;
 import br.com.screenmatch.domain.Series.DadosTemporada;
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -54,13 +58,35 @@ public class Principal {
                 .flatMap(t -> t.episodios().stream())
                 .collect(Collectors.toList());
 
-
         System.out.println("\nTop 5 episódios");
         dadosEpisodios.stream()
                 .filter(e -> !e.avaliacao().equalsIgnoreCase("N/A"))
                 .sorted(Comparator.comparing(DadosEpisodio::avaliacao)
                 .reversed()).limit(5)
                 .forEach(System.out::println);
+
+        List<Episodio> episodio = temporadas.stream()
+                .flatMap(t -> t.episodios().stream()
+                .map(d -> new Episodio(t.temporada(), d)))
+                .collect(Collectors.toList());
+
+        episodio.forEach(System.out::println);
+
+        System.out.println("A partir que ano você deseja ver os episodios? ");
+        var ano = leitura.nextInt();
+        leitura.nextLine();
+
+        LocalDate dataBusca = LocalDate.of(ano, 1, 1);
+
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        episodio.stream()
+                .filter(e -> e.getDataLancamento() != null && e.getDataLancamento().isAfter(dataBusca))
+                .forEach(e -> System.out.println(
+                        "Temporada: " + e.getTemporada() +
+                        " Episodio: " + e.getTitulo() +
+                        " Data lançamento: " + e.getDataLancamento().format(formatador)
+                ));
 
     }
 
