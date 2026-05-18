@@ -85,6 +85,7 @@ public class Principal {
                 .forEach(e -> System.out.println(
                         "Temporada: " + e.getTemporada() +
                         " Episodio: " + e.getTitulo() +
+                        " Avaliação: " + e.getAvaliacao() +
                         " Data lançamento: " + e.getDataLancamento().format(formatador)
                 ));
 
