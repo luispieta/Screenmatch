@@ -7,7 +7,6 @@ import br.com.screenmatch.domain.Series.DadosEpisodio;
 import br.com.screenmatch.domain.Series.DadosSerie;
 import br.com.screenmatch.domain.Series.DadosTemporada;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -108,6 +107,20 @@ public class Principal {
                         " Avaliação: " + e.getAvaliacao() +
                         " Data lançamento: " + e.getDataLancamento().format(formatador)
                 ));
+
+        // ----- AVALIAÇÕES POR TEMPORADA -----
+        Map<Integer, Double> avaliaçaoPorTemporada = episodio.stream()
+                .filter(e -> e.getAvaliacao() > 0.0)
+                .collect(Collectors.groupingBy(Episodio::getTemporada, Collectors.averagingDouble(Episodio::getAvaliacao)));
+        System.out.println(avaliaçaoPorTemporada);
+
+        DoubleSummaryStatistics est = episodio.stream()
+                .filter(e -> e.getAvaliacao() > 0.0)
+                .collect(Collectors.summarizingDouble(Episodio::getAvaliacao));
+        System.out.println("Média: " + est.getAverage());
+        System.out.println("Pior episódio: " + est.getMin());
+        System.out.println("Melhor episódio: " + est.getMax());
+        System.out.println("Quantidades de episódios: " + est.getCount());
 
     }
 
